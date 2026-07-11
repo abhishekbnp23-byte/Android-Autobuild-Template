@@ -19,67 +19,78 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // UI एलिमेंट्स को इनिशियलाइज करना
+        // Initialize UI components
         etNum1 = findViewById(R.id.etNum1);
         etNum2 = findViewById(R.id.etNum2);
         tvResult = findViewById(R.id.tvResult);
 
-        Button btnAdd = findViewById(R.id.btnAdd);
-        Button btnSub = findViewById(R.id.btnSub);
-        Button btnMul = findViewById(R.id.btnMul);
-        Button btnDiv = findViewById(R.id.btnDiv);
-        Button btnSin = findViewById(R.id.btnSin);
-        Button btnCos = findViewById(R.id.btnCos);
-        Button btnTan = findViewById(R.id.btnTan);
-        Button btnSqrt = findViewById(R.id.btnSqrt);
-        Button btnLog = findViewById(R.id.btnLog);
-
-        // बेसिक गणितीय ऑपरेशन्स के लिए श्रोता (Listeners)
-        btnAdd.setOnClickListener(v -> processCalculation("+"));
-        btnSub.setOnClickListener(v -> processCalculation("-"));
-        btnMul.setOnClickListener(v -> processCalculation("*"));
-        btnDiv.setOnClickListener(v -> processCalculation("/"));
-
-        // एडवांस साइंटिफिक ऑपरेशन्स के लिए श्रोता (Listeners)
-        btnSin.setOnClickListener(v -> processCalculation("sin"));
-        btnCos.setOnClickListener(v -> processCalculation("cos"));
-        btnTan.setOnClickListener(v -> processCalculation("tan"));
-        btnSqrt.setOnClickListener(v -> processCalculation("sqrt"));
-        btnLog.setOnClickListener(v -> processCalculation("log"));
+        // Bind buttons to operations
+        setupButton(R.id.btnAdd, "+");
+        setupButton(R.id.btnSub, "-");
+        setupButton(R.id.btnMul, "*");
+        setupButton(R.id.btnDiv, "/");
+        setupButton(R.id.btnSin, "sin");
+        setupButton(R.id.btnCos, "cos");
+        setupButton(R.id.btnTan, "tan");
+        setupButton(R.id.btnSqrt, "sqrt");
+        setupButton(R.id.btnLog, "log");
     }
 
-    private void processCalculation(String operation) {
+    private void setupButton(int resId, final String operation) {
+        Button button = findViewById(resId);
+        if (button != null) {
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    performCalculation(operation);
+                }
+            });
+        }
+    }
+
+    private void performCalculation(String operation) {
         String num1Str = etNum1.getText().toString().trim();
         String num2Str = etNum2.getText().toString().trim();
 
-        double num1 = 0;
-        double num2 = 0;
-
-        // इनपुट वैलिडेशन
         if (num1Str.isEmpty()) {
-            Toast.makeText(this, "Please enter at least First Number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please enter the first number", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        double num1;
+        double num2 = 0;
 
         try {
             num1 = Double.parseDouble(num1Str);
-            if (!num2Str.isEmpty()) {
-                num2 = Double.parseDouble(num2Str);
-            }
         } catch (NumberFormatException e) {
-            tvResult.setText("Error: Invalid Input Format");
+            tvResult.setText("Error: Invalid Number 1");
             return;
         }
 
-        // गणना लॉजिक को कॉल करना
+        // Check if operation requires a second number (basic operations)
+        boolean isBinaryOperation = operation.equals("+") || operation.equals("-") || operation.equals("*") || operation.equals("/");
+        
+        if (isBinaryOperation) {
+            if (num2Str.isEmpty()) {
+                Toast.makeText(this, "Please enter the second number", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            try {
+                num2 = Double.parseDouble(num2Str);
+            } catch (NumberFormatException e) {
+                tvResult.setText("Error: Invalid Number 2");
+                return;
+            }
+        }
+
         String result = calculateScientific(num1, num2, operation);
         tvResult.setText("Result: " + result);
     }
 
-    // Python लॉजिक का जावा रूपांतरण
+    // Ported scientific calculator logic from Python
     private String calculateScientific(double num1, double num2, String operation) {
         switch (operation) {
-            // 1. बेसिक गणितीय ऑपरेशन्स (Basic Operations)
+            // 1. Basic Operations
             case "+":
                 return String.valueOf(num1 + num2);
             case "-":
@@ -92,9 +103,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     return "Error: Division by Zero";
                 }
-
-            // 2. एडवांस साइंटिफिक ऑपरेशन्स (Scientific Operations)
-            // ध्यान दें: इनपुट्स को रेडियन में मानकर गणना की जा रही है
+                
+            // 2. Scientific Operations (Radians)
             case "sin":
                 return String.valueOf(Math.sin(num1));
             case "cos":
